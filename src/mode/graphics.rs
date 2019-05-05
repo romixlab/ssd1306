@@ -92,6 +92,22 @@ where
         }
     }
 
+    /// Write region to display, much higher fps can be reached that way
+    pub fn flush_partly(&mut self, start: (u16, u16), end: (u16, u16)) -> Result<(), ()> {
+        self.properties.set_draw_area((start.0 as u8, start.1 as u8),
+                                      (end.0  as u8 + 1, end.1 as u8 + 1));
+        let start_group = (start.1) / 8;
+        let end_group = (end.1) / 8;
+
+        let len = (end.0 - start.0);
+        let len = len as usize;
+        for page in start_group..end_group+1 {
+            let from = (page * 128 + start.0) as usize;
+            self.properties.draw(&self.buffer[from..=(from+len)])?;
+        }
+        Ok(())
+    }
+
     /// Turn a pixel on or off. A non-zero `value` is treated as on, `0` as off. If the X and Y
     /// coordinates are out of the bounds of the display, this method call is a noop.
     pub fn set_pixel(&mut self, x: u32, y: u32, value: u8) {
